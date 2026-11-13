@@ -1,0 +1,111 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "ZhiJinPower MPPT",
+        "description": "Home Assistant found ZhiJinPower controllers over Bluetooth. Pick one, or type the Bluetooth address yourself.",
+        "menu_options": {
+          "pick_device": "Choose a discovered controller",
+          "manual": "Enter the Bluetooth address (MAC)"
+        }
+      },
+      "pick_device": {
+        "title": "Choose the controller",
+        "description": "Close the ZhiJinPower phone app first: the controller accepts only one Bluetooth connection at a time.",
+        "data": {
+          "address": "Controller",
+          "skip_test": "Add it even if the connection test fails"
+        }
+      },
+      "manual": {
+        "title": "Enter the Bluetooth address",
+        "description": "Type the Bluetooth address (MAC) of the controller, for example AA:BB:CC:DD:EE:FF. The controller advertises itself as ZJBE-<address>, so that name works too. Close the ZhiJinPower phone app first: the controller accepts only one Bluetooth connection at a time.",
+        "data": {
+          "address": "Bluetooth address (MAC)",
+          "skip_test": "Add it even if the connection test fails"
+        }
+      },
+      "bluetooth_confirm": {
+        "description": "Do you want to set up {name}? Close the ZhiJinPower phone app first: the controller accepts only one Bluetooth connection at a time.",
+        "data": {
+          "skip_test": "Add it even if the connection test fails"
+        }
+      }
+    },
+    "error": {
+      "invalid_address": "This is not a Bluetooth address. Use the form AA:BB:CC:DD:EE:FF.",
+      "not_in_range": "No Bluetooth adapter or proxy can see this controller. Check the address, or move the adapter or ESP32 proxy closer.",
+      "cannot_connect": "The controller was found but did not answer. Close the ZhiJinPower phone app, move the Bluetooth adapter or proxy closer and try again.",
+      "unknown": "Unexpected error. See the Home Assistant log for details."
+    },
+    "abort": {
+      "already_configured": "This controller is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "ZhiJinPower MPPT options",
+        "data": {
+          "scan_interval": "Polling interval (seconds)"
+        },
+        "data_description": {
+          "scan_interval": "How often Home Assistant connects to the controller. The controller accepts one connection at a time, so the phone app can only connect between polls."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery_voltage": { "name": "Battery voltage" },
+      "charge_current": { "name": "Charge current" },
+      "load_current": { "name": "Load current" },
+      "temperature": { "name": "Temperature" },
+      "total_generation": { "name": "Total generation" },
+      "charge_stage": { "name": "Charge stage code" },
+      "battery_type_name": {
+        "name": "Battery type",
+        "state": {
+          "lithium": "Lithium (b01)",
+          "gel": "Gel (b02)",
+          "lead_acid": "Lead-acid / LiFePO4 (b03)"
+        }
+      },
+      "load_mode_name": {
+        "name": "Load mode",
+        "state": {
+          "manual": "Manual (Cot)"
+        }
+      },
+      "load_mode": { "name": "Load mode code" },
+      "setting_1003": { "name": "Setting 0x1003" },
+      "setting_1005": { "name": "Setting 0x1005" },
+      "setting_1008": { "name": "Setting 0x1008" },
+      "register_1": { "name": "Register 1" },
+      "register_6": { "name": "Register 6" },
+      "register_8": { "name": "Register 8" }
+    },
+    "binary_sensor": {
+      "load_on": { "name": "Load output" }
+    },
+    "switch": {
+      "load_switch": { "name": "Load" }
+    },
+    "number": {
+      "float_voltage": { "name": "Floating charge voltage" },
+      "recovery_voltage": { "name": "Discharge recovery voltage" },
+      "cutoff_voltage": { "name": "Discharge cut-off voltage" }
+    },
+    "select": {
+      "battery_type": {
+        "name": "Battery type setting",
+        "state": {
+          "lithium": "Lithium (b01)",
+          "gel": "Gel (b02)",
+          "lead_acid": "Lead-acid / LiFePO4 (b03)"
+        }
+      }
+    }
+  }
+}

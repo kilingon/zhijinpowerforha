@@ -1,0 +1,19 @@
+﻿{
+  "domain": "zhijin_mppt",
+  "name": "ZhiJinPower MPPT",
+  "bluetooth": [
+    {
+      "connectable": true,
+      "local_name": "ZJB*"
+    }
+  ],
+  "codeowners": ["@YOUR_GITHUB_USER"],
+  "config_flow": true,
+  "dependencies": ["bluetooth_adapters"],
+  "documentation": "https://github.com/YOUR_GITHUB_USER/zhijin-mppt-ha",
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/YOUR_GITHUB_USER/zhijin-mppt-ha/issues",
+  "requirements": [],
+  "version": "0.4.0"
+}

@@ -1,0 +1,22 @@
+name: Bug report
+description: Something does not work
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: Controller model and Bluetooth name (e.g. BL917, ZJBE-xxxxxxxxxxxx)
+  - type: input
+    id: ha
+    attributes:
+      label: Home Assistant version and Bluetooth adapter / ESP32 proxy
+  - type: textarea
+    id: diag
+    attributes:
+      label: Diagnostics
+      description: Device page → three dots → Download diagnostics (address is redacted). Paste the file contents or attach it. Add log lines from `custom_components.zhijin_mppt` if possible.
