@@ -13,7 +13,7 @@ Custom integration for Bluetooth LE MPPT solar charge controllers that use the *
 - Diagnostics download (address redacted), polling interval option (10–600 s)
 
 ## Installation
-**HACS:** HACS → ⋮ → Custom repositories → add `https://github.com/YOUR_GITHUB_USER/zhijin-mppt-ha` as *Integration* → install → restart Home Assistant.
+**HACS:** HACS → ⋮ → Custom repositories → add `https://github.com/kilingon/zhijin-mppt-ha` as *Integration* → install → restart Home Assistant.
 
 **Manual:** copy `custom_components/zhijin_mppt` into your `config/custom_components/` and restart.
 

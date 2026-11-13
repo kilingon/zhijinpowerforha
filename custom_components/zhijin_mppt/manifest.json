@@ -7,13 +7,13 @@
       "local_name": "ZJB*"
     }
   ],
-  "codeowners": ["@YOUR_GITHUB_USER"],
+  "codeowners": ["@kilingon"],
   "config_flow": true,
   "dependencies": ["bluetooth_adapters"],
-  "documentation": "https://github.com/YOUR_GITHUB_USER/zhijin-mppt-ha",
+  "documentation": "https://github.com/kilingon/zhijin-mppt-ha",
   "integration_type": "device",
   "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/YOUR_GITHUB_USER/zhijin-mppt-ha/issues",
+  "issue_tracker": "https://github.com/kilingon/zhijin-mppt-ha/issues",
   "requirements": [],
   "version": "0.4.0"
 }
