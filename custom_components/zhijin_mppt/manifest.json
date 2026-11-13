@@ -10,10 +10,10 @@
   "codeowners": ["@kilingon"],
   "config_flow": true,
   "dependencies": ["bluetooth_adapters"],
-  "documentation": "https://github.com/kilingon/zhijin-mppt-ha",
+  "documentation": "https://github.com/kilingon/zhijinpowerforha",
   "integration_type": "device",
   "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/kilingon/zhijin-mppt-ha/issues",
+  "issue_tracker": "https://github.com/kilingon/zhijinpowerforha/issues",
   "requirements": [],
   "version": "0.4.0"
 }

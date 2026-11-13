@@ -13,7 +13,7 @@
 - Tanılama indirme (adres gizlenir), sorgulama aralığı seçeneği (10–600 sn)
 
 ## Kurulum
-**HACS:** HACS → ⋮ → Özel depolar → `https://github.com/kilingon/zhijin-mppt-ha` adresini *Integration* olarak ekle → kur → Home Assistant'ı yeniden başlat.
+**HACS:** HACS → ⋮ → Özel depolar → `https://github.com/kilingon/zhijinpowerforha` adresini *Integration* olarak ekle → kur → Home Assistant'ı yeniden başlat.
 
 **Elle:** `custom_components/zhijin_mppt` klasörünü `config/custom_components/` içine kopyala ve yeniden başlat.
 
