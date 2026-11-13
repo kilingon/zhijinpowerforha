@@ -1,4 +1,4 @@
-﻿# Home Assistant için ZhiJinPower MPPT
+# Home Assistant için ZhiJinPower MPPT
 
 [English](README.md)
 
