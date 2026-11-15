@@ -36,12 +36,13 @@ Modbus-RTU style: `addr func … crc16`, CRC16 poly 0xA001, init 0xFFFF, low byt
 | Reg | Meaning | Writable range (raw) |
 |---|---|---|
 | 0x1001 | battery type: 1 lithium, 2 gel, 3 lead-acid/LiFePO4 | 1–3 (untested on hardware) |
-| 0x1002 | load mode (0 = manual) | not written |
+| 0x1002 | unknown | not written |
 | 0x1004 | floating charge voltage ×0.1 V | 120–145 |
 | 0x1006 | discharge cut-off ×0.1 V | 90–115 |
 | 0x1007 | load on/off (takes effect immediately) | 0–1 |
 | 0x1009 | discharge recovery ×0.1 V | 110–130 |
-| 0x1003, 0x1005, 0x1008 | unknown | not written |
+| 0x1005 | load mode (menu 5): 0 Cot (manual), 1 Auto, 2 Time, 3 Out. The load switch (0x1007) is expected to work in Cot only | 0–3 (untested on hardware) |
+| 0x1003, 0x1008 | unknown | not written |
 
 Ranges are the 12 V values from the BL917 manual; 24 V systems are not supported.
 

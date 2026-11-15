@@ -58,12 +58,24 @@
   },
   "entity": {
     "sensor": {
-      "battery_voltage": { "name": "Batarya voltajı" },
-      "charge_current": { "name": "Şarj akımı" },
-      "load_current": { "name": "Yük akımı" },
-      "temperature": { "name": "Sıcaklık" },
-      "total_generation": { "name": "Toplam üretim" },
-      "charge_stage": { "name": "Şarj aşaması kodu" },
+      "battery_voltage": {
+        "name": "Batarya voltajı"
+      },
+      "charge_current": {
+        "name": "Şarj akımı"
+      },
+      "load_current": {
+        "name": "Yük akımı"
+      },
+      "temperature": {
+        "name": "Sıcaklık"
+      },
+      "total_generation": {
+        "name": "Toplam üretim"
+      },
+      "charge_stage": {
+        "name": "Şarj aşaması kodu"
+      },
       "battery_type_name": {
         "name": "Batarya tipi",
         "state": {
@@ -75,27 +87,54 @@
       "load_mode_name": {
         "name": "Yük modu",
         "state": {
-          "manual": "Manuel (Cot)"
+          "manual": "Manuel (Cot)",
+          "auto": "Auto",
+          "timer": "Zaman",
+          "output": "Out"
         }
       },
-      "load_mode": { "name": "Yük modu kodu" },
-      "setting_1003": { "name": "Ayar 0x1003" },
-      "setting_1005": { "name": "Ayar 0x1005" },
-      "setting_1008": { "name": "Ayar 0x1008" },
-      "register_1": { "name": "Register 1" },
-      "register_6": { "name": "Register 6" },
-      "register_8": { "name": "Register 8" }
+      "load_mode": {
+        "name": "Yük modu kodu"
+      },
+      "setting_1002": {
+        "name": "Ayar 0x1002"
+      },
+      "setting_1003": {
+        "name": "Ayar 0x1003"
+      },
+      "setting_1008": {
+        "name": "Ayar 0x1008"
+      },
+      "register_1": {
+        "name": "Register 1"
+      },
+      "register_6": {
+        "name": "Register 6"
+      },
+      "register_8": {
+        "name": "Register 8"
+      }
     },
     "binary_sensor": {
-      "load_on": { "name": "Yük çıkışı" }
+      "load_on": {
+        "name": "Yük çıkışı"
+      }
     },
     "switch": {
-      "load_switch": { "name": "Yük" }
+      "load_switch": {
+        "name": "Yük"
+      }
     },
     "number": {
-      "float_voltage": { "name": "Floating şarj voltajı" },
-      "recovery_voltage": { "name": "Deşarj geri dönüş voltajı" },
-      "cutoff_voltage": { "name": "Deşarj kesme voltajı" }
+      "float_voltage": {
+        "name": "Floating şarj voltajı"
+      },
+      "recovery_voltage": {
+        "name": "Deşarj geri dönüş voltajı"
+      },
+      "cutoff_voltage": {
+        "name": "Deşarj kesme voltajı"
+      }
     },
     "select": {
       "battery_type": {
@@ -104,6 +143,15 @@
           "lithium": "Lityum (b01)",
           "gel": "Jel (b02)",
           "lead_acid": "Kurşun-asit / LiFePO4 (b03)"
+        }
+      },
+      "load_mode_select": {
+        "name": "Yük modu ayarı",
+        "state": {
+          "manual": "Manuel (Cot)",
+          "auto": "Auto",
+          "timer": "Zaman",
+          "output": "Out"
         }
       }
     }

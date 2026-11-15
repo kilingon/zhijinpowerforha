@@ -21,10 +21,10 @@ class FakeController:
         # settings block, register address -> raw value
         self.reg = {
             0x1001: 2,  # battery type: gel (b02)
-            0x1002: 0,  # load mode: manual
+            0x1002: 0,
             0x1003: 0,
             0x1004: 145,  # floating 14.5 V
-            0x1005: 0,
+            0x1005: 0,  # load mode (menu 5): 0 manual / Cot
             0x1006: 108,  # cut-off 10.8 V
             0x1007: 1,  # load on
             0x1008: 0,

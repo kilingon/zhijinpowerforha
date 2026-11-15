@@ -12,6 +12,7 @@ from homeassistant.data_entry_flow import FlowResultType
 
 from custom_components.zhijin_mppt.const import (
     CONF_SCAN_INTERVAL,
+    DEFAULT_SCAN_INTERVAL,
     CONF_SKIP_TEST,
     DOMAIN,
 )
@@ -222,7 +223,7 @@ async def test_options_flow_changes_the_polling_interval(hass, radio):
     entry.add_to_hass(hass)
     assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
-    assert entry.runtime_data.update_interval == timedelta(seconds=30)
+    assert entry.runtime_data.update_interval == timedelta(seconds=DEFAULT_SCAN_INTERVAL)
 
     result = await hass.config_entries.options.async_init(entry.entry_id)
     assert result["type"] is FlowResultType.FORM and result["step_id"] == "init"

@@ -8,7 +8,7 @@ CONF_SKIP_TEST = "skip_test"
 # The controller accepts only one Bluetooth connection at a time. The integration
 # connects briefly for every poll and disconnects again, so that the phone app can
 # still be used between polls.
-DEFAULT_SCAN_INTERVAL = 30  # seconds
+DEFAULT_SCAN_INTERVAL = 60  # seconds
 MIN_SCAN_INTERVAL = 10
 MAX_SCAN_INTERVAL = 600
 

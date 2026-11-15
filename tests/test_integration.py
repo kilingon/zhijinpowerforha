@@ -15,7 +15,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.util import dt as dt_util
 
-from custom_components.zhijin_mppt.const import DOMAIN
+from custom_components.zhijin_mppt.const import DEFAULT_SCAN_INTERVAL, DOMAIN
 from custom_components.zhijin_mppt.diagnostics import async_get_config_entry_diagnostics
 
 from .fake_device import ADDRESS, NAME
@@ -47,7 +47,7 @@ async def call(hass, domain: str, service: str, platform: str, key: str, **data)
     )
 
 
-async def poll(hass, seconds: int = 31) -> None:
+async def poll(hass, seconds: int = DEFAULT_SCAN_INTERVAL + 1) -> None:
     async_fire_time_changed(hass, dt_util.utcnow() + timedelta(seconds=seconds))
     await hass.async_block_till_done()
     # the fake radio answers from the event loop; give the poll time to finish
@@ -95,8 +95,8 @@ async def test_raw_registers_and_battery_type_select_are_disabled_by_default(has
     registry = er.async_get(hass)
     for platform, key in [
         ("sensor", "register_1"), ("sensor", "register_6"), ("sensor", "register_8"),
-        ("sensor", "setting_1003"), ("sensor", "setting_1005"), ("sensor", "setting_1008"),
-        ("sensor", "load_mode"), ("select", "battery_type"),
+        ("sensor", "setting_1002"), ("sensor", "setting_1003"), ("sensor", "setting_1008"),
+        ("sensor", "load_mode"), ("select", "battery_type"), ("select", "load_mode_select"),
     ]:
         entry = registry.async_get(eid(hass, platform, key))
         assert entry.disabled_by is er.RegistryEntryDisabler.INTEGRATION, key
@@ -142,7 +142,7 @@ async def test_voltage_settings_can_be_changed(hass, radio, controller):
     assert state(hass, "number", "recovery_voltage").state == "12.7"
     assert state(hass, "number", "cutoff_voltage").state == "10.9"
     # nothing else was touched
-    assert controller.reg[0x1001] == 2 and controller.reg[0x1007] == 1 and controller.reg[0x1002] == 0
+    assert controller.reg[0x1001] == 2 and controller.reg[0x1007] == 1 and controller.reg[0x1005] == 0
 
 
 async def test_number_limits_come_from_the_manual(hass, radio):
@@ -208,7 +208,7 @@ async def test_entities_become_unavailable_and_recover(hass, radio, controller):
 
     controller.silent = False
     controller.status[1] = 130
-    await poll(hass, seconds=70)
+    await poll(hass, seconds=2 * DEFAULT_SCAN_INTERVAL + 10)
     assert state(hass, "sensor", "battery_voltage").state == "13.0"
 
 
@@ -228,3 +228,37 @@ async def test_diagnostics_do_not_contain_the_address(hass, radio):
     assert diagnostics["entry"]["title"] == "**REDACTED**"
     dump = json.dumps(diagnostics, default=str)
     assert ADDRESS not in dump and ADDRESS.replace(":", "") not in dump
+
+
+async def test_load_mode_is_read_from_0x1005(hass, radio, controller):
+    controller.reg[0x1005] = 3
+    await setup_entry(hass)
+    assert state(hass, "sensor", "load_mode_name").state == "output"
+
+
+async def test_load_switch_refuses_when_not_in_manual_mode(hass, radio, controller):
+    controller.reg[0x1005] = 1  # auto
+    await setup_entry(hass)
+    controller.log.clear()
+    with pytest.raises(HomeAssistantError, match="not manual"):
+        await call(hass, "switch", "turn_off", "switch", "load_switch")
+    assert controller.log == []
+
+
+async def test_load_mode_select(hass, radio, controller):
+    entry = await setup_entry(hass)
+    er.async_get(hass).async_update_entity(eid(hass, "select", "load_mode_select"), disabled_by=None)
+    await hass.config_entries.async_reload(entry.entry_id)
+    await hass.async_block_till_done()
+
+    select = state(hass, "select", "load_mode_select")
+    assert select.state == "manual"
+    assert select.attributes["options"] == ["manual", "auto", "timer", "output"]
+    await call(hass, "select", "select_option", "select", "load_mode_select", option="timer")
+    assert controller.reg[0x1005] == 2
+    assert state(hass, "select", "load_mode_select").state == "timer"
+    # the switch is locked now, the mode can be put back
+    with pytest.raises(HomeAssistantError, match="not manual"):
+        await call(hass, "switch", "turn_on", "switch", "load_switch")
+    await call(hass, "select", "select_option", "select", "load_mode_select", option="manual")
+    assert controller.reg[0x1005] == 0

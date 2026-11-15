@@ -55,7 +55,7 @@ def test_settings_reply():
 
 
 def test_unknown_codes_are_none():
-    data = p.parse_settings(_frame([9, 5, 0, 145, 0, 108, 1, 0, 126], 18))
+    data = p.parse_settings(_frame([9, 0, 0, 145, 5, 108, 1, 0, 126], 18))
     assert data["battery_type"] == 9 and data["battery_type_name"] is None
     assert data["load_mode"] == 5 and data["load_mode_name"] is None
 
@@ -98,7 +98,7 @@ def test_load_frames_equal_the_ones_sent_by_the_app():
     [
         (0x1004, 146), (0x1004, 119), (0x1006, 116), (0x1006, 89), (0x1009, 131), (0x1009, 109),
         (0x1001, 0), (0x1001, 4), (0x1007, 2),
-        (0x1002, 0), (0x1003, 0), (0x1005, 0), (0x1008, 0), (0x0001, 0), (0x2000, 1),
+        (0x1002, 0), (0x1003, 0), (0x1008, 0), (0x0001, 0), (0x2000, 1),
     ],
 )
 def test_writes_outside_the_known_ranges_are_refused(register, value):
@@ -126,3 +126,11 @@ def test_writes_outside_the_known_ranges_are_refused(register, value):
 )
 def test_normalize_address(text, expected):
     assert normalize_address(text) == expected
+
+
+def test_load_mode_codes_and_write_frame():
+    assert p.LOAD_MODES == {0: "manual", 1: "auto", 2: "timer", 3: "output"}
+    frame = p.build_write_frame(p.REG_LOAD_MODE, 2)
+    assert frame[:9] == bytes.fromhex("01 10 10 05 00 01 02 00 02")
+    with pytest.raises(ValueError):
+        p.build_write_frame(p.REG_LOAD_MODE, 4)

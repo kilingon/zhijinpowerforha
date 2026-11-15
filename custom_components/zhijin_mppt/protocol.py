@@ -35,7 +35,7 @@ SETTINGS_REGISTER_COUNT = 9
 SETTINGS_LENGTH = 3 + 2 * SETTINGS_REGISTER_COUNT + 2  # 23 bytes
 
 REG_BATTERY_TYPE = 0x1001  # 1 lithium (b01), 2 gel (b02), 3 lead-acid/LiFePO4 (b03)
-REG_LOAD_MODE = 0x1002  # 0 = manual (Cot); other values not mapped yet
+REG_LOAD_MODE = 0x1005  # menu 5, load mode: 0 Cot (manual), 1 Auto, 2 Time, 3 Out
 REG_FLOAT_VOLTAGE = 0x1004  # tenths of a volt
 REG_CUTOFF_VOLTAGE = 0x1006  # discharge cut-off, tenths of a volt
 REG_LOAD = 0x1007  # 1 = load on, 0 = load off
@@ -44,7 +44,7 @@ LOAD_REGISTER = REG_LOAD
 
 # Keys are translated in translations/*.json (entity.select.battery_type.state ...)
 BATTERY_TYPES = {1: "lithium", 2: "gel", 3: "lead_acid"}
-LOAD_MODES = {0: "manual"}
+LOAD_MODES = {0: "manual", 1: "auto", 2: "timer", 3: "output"}
 
 # Registers that may be written and the accepted raw range. The voltage limits
 # are the 12 V values from the controller manual (BL917), in tenths of a volt.
@@ -53,6 +53,7 @@ WRITABLE: dict[int, tuple[int, int]] = {
     REG_FLOAT_VOLTAGE: (120, 145),
     REG_CUTOFF_VOLTAGE: (90, 115),
     REG_LOAD: (0, 1),
+    REG_LOAD_MODE: (0, 3),
     REG_RECOVERY_VOLTAGE: (110, 130),
 }
 ACK_LENGTH = 8
@@ -113,14 +114,14 @@ def parse_settings(frame: bytes) -> dict[str, Any]:
     return {
         "battery_type": regs[0],
         "battery_type_name": BATTERY_TYPES.get(regs[0]),  # None if unknown
-        "load_mode": regs[1],
-        "load_mode_name": LOAD_MODES.get(regs[1]),  # None if unknown
+        "load_mode": regs[4],  # 0x1005
+        "load_mode_name": LOAD_MODES.get(regs[4]),  # None if unknown
         "float_voltage": regs[3] / 10,
         "cutoff_voltage": regs[5] / 10,
         "recovery_voltage": regs[8] / 10,
         "load_setting": regs[6] == 1,  # commanded load state, updates at once
+        "setting_1002": regs[1],
         "setting_1003": regs[2],
-        "setting_1005": regs[4],
         "setting_1008": regs[7],
         "_settings_raw": {SETTINGS_FIRST_REGISTER + i: v for i, v in enumerate(regs)},
     }

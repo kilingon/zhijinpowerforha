@@ -23,6 +23,7 @@ _LOGGER = logging.getLogger(__name__)
 
 RESPONSE_TIMEOUT = 4  # seconds to wait for one reply
 REQUEST_ATTEMPTS = 3
+CLOSE_TIMEOUT = 8  # seconds for stop_notify / disconnect each
 
 _T = TypeVar("_T")
 
@@ -95,14 +96,28 @@ async def async_open_session(
         await client.start_notify(NOTIFY_CHAR_UUID, session.on_notify)
         yield session
     finally:
+        await _async_close(client, ble_device.address)
+
+
+async def _async_close(client: BleakClientWithServiceCache, address: str) -> None:
+    """Always release the controller: it accepts a single connection and stops
+    advertising while connected, so a connection left open locks everybody out.
+
+    Runs shielded, so a cancelled poll cannot abort the disconnect half way, and
+    with timeouts, so a hanging stop_notify cannot keep the link open.
+    """
+
+    async def _close() -> None:
         try:
-            await client.stop_notify(NOTIFY_CHAR_UUID)
-        except (BleakError, TimeoutError, KeyError):
+            await asyncio.wait_for(client.stop_notify(NOTIFY_CHAR_UUID), CLOSE_TIMEOUT)
+        except (BleakError, TimeoutError, KeyError, OSError):
             pass
         try:
-            await client.disconnect()
-        except (BleakError, TimeoutError):
-            pass
+            await asyncio.wait_for(client.disconnect(), CLOSE_TIMEOUT)
+        except (BleakError, TimeoutError, OSError) as err:
+            _LOGGER.warning("%s: could not disconnect cleanly: %s", address, err)
+
+    await asyncio.shield(asyncio.ensure_future(_close()))
 
 
 async def async_read_status(

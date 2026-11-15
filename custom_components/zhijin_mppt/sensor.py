@@ -98,8 +98,8 @@ SENSORS: tuple[SensorEntityDescription, ...] = (
     # Raw registers whose meaning is not known (yet). Disabled by default, enable
     # them to watch how they change.
     _diagnostic("load_mode"),
+    _diagnostic("setting_1002"),
     _diagnostic("setting_1003"),
-    _diagnostic("setting_1005"),
     _diagnostic("setting_1008"),
     _diagnostic("register_1"),
     _diagnostic("register_6"),
