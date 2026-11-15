@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.1
+- Fix hassfest: the translation text no longer contains `<address>` (read as HTML).
+- Add the integration icon (`brand/icon.png`) required by HACS.
+- GitHub workflows use `actions/checkout@v5`.
+
 ## 0.5.0
 - **Fixed:** the load mode is register 0x1005 (menu 5 on the controller), not 0x1002. The "Load mode" sensor now shows Manual (Cot) / Auto / Timer / Out. 0x1002 is exposed as a disabled diagnostic sensor.
 - **New:** "Load mode setting" select (disabled by default, write not verified on hardware).

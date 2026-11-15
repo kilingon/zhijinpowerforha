@@ -20,7 +20,7 @@
       },
       "manual": {
         "title": "Bluetooth adresini gir",
-        "description": "Kontrolcünün Bluetooth adresini (MAC) yaz, örneğin AA:BB:CC:DD:EE:FF. Kontrolcü kendini ZJBE-<adres> adıyla duyurur, bu ad da kabul edilir. Önce telefondaki ZhiJinPower uygulamasını kapat: kontrolcü aynı anda yalnızca tek Bluetooth bağlantısı kabul eder.",
+        "description": "Kontrolcünün Bluetooth adresini (MAC) yaz, örneğin AA:BB:CC:DD:EE:FF. Kontrolcü kendini ZJBE ve adres şeklinde duyurur, ZJBE-AABBCCDDEEFF gibi bir ad da kabul edilir. Önce telefondaki ZhiJinPower uygulamasını kapat: kontrolcü aynı anda yalnızca tek Bluetooth bağlantısı kabul eder.",
         "data": {
           "address": "Bluetooth adresi (MAC)",
           "skip_test": "Bağlantı testi başarısız olsa da ekle"

@@ -20,7 +20,7 @@
       },
       "manual": {
         "title": "Enter the Bluetooth address",
-        "description": "Type the Bluetooth address (MAC) of the controller, for example AA:BB:CC:DD:EE:FF. The controller advertises itself as ZJBE-<address>, so that name works too. Close the ZhiJinPower phone app first: the controller accepts only one Bluetooth connection at a time.",
+        "description": "Type the Bluetooth address (MAC) of the controller, for example AA:BB:CC:DD:EE:FF. The controller advertises itself as ZJBE followed by the address, so a name like ZJBE-AABBCCDDEEFF works too. Close the ZhiJinPower phone app first: the controller accepts only one Bluetooth connection at a time.",
         "data": {
           "address": "Bluetooth address (MAC)",
           "skip_test": "Add it even if the connection test fails"
