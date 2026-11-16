@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.3
+- **New:** system voltage mode (register 0x1008) as a sensor and as a select (disabled by default). Only Auto and 12 V can be set; 24, 36, 48, 60, 72 and 84 V are shown by the sensor (presumed order, unverified) but never written.
+- **New:** voltage settings are no longer written when the system voltage mode is not Auto or 12 V, because the limits are for 12 V systems.
+- **New:** "Photovoltaic state" sensor (night / day) from status register 6.
+- **Changed:** load mode names follow the controller and the app: Manual (Cot), Automatic (Auto), Timing (Time), Straight out (Out). The internal state keys are unchanged.
+- **Verified from a capture of the app:** the battery type write (0x1001) uses the same frame the integration sends.
+- The unknown-register sensor "Setting 0x1008" is gone (replaced by the system voltage sensors).
+- Tests (82 in total).
+
 ## 0.5.2
 - **New:** option "Bluetooth adapter / proxy": connect only through one chosen adapter or ESP32 proxy instead of letting Home Assistant switch between several. If the chosen one cannot hear the controller, the entities become unavailable (set it back to Auto to undo).
 - **New:** connection diagnostic sensors that stay available when the controller cannot be reached: last update, failed polls in a row, last error, Bluetooth source and signal strength (RSSI).

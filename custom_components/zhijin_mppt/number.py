@@ -20,6 +20,8 @@ from .protocol import (
     REG_CUTOFF_VOLTAGE,
     REG_FLOAT_VOLTAGE,
     REG_RECOVERY_VOLTAGE,
+    SYSTEM_VOLTAGES,
+    VOLTAGE_WRITE_MODES,
     WRITABLE,
 )
 
@@ -76,6 +78,13 @@ class ZhiJinNumber(ZhiJinEntity, NumberEntity):
         raw = round(value * 10)
         data = self.coordinator.data or {}
         key = self.entity_description.key
+        mode = data.get("system_voltage")
+        if mode not in VOLTAGE_WRITE_MODES:
+            name = SYSTEM_VOLTAGES.get(mode, f"code {mode}")
+            raise HomeAssistantError(
+                f"The system voltage mode is '{name}'. The limits of this integration "
+                "are for 12 V systems, so voltages are not written in that mode."
+            )
         # The cut-off voltage has to stay below the recovery voltage.
         if key == "cutoff_voltage" and raw >= round(data.get("recovery_voltage", 99) * 10):
             raise HomeAssistantError(

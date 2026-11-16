@@ -15,7 +15,10 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .entity import ZhiJinEntity
 from homeassistant.exceptions import HomeAssistantError
 
-from .protocol import LOAD_MODES, REG_LOAD
+from .protocol import REG_LOAD
+
+# Names as shown by the controller / app
+LOAD_MODE_NAMES = {0: "Manual", 1: "Automatic", 2: "Timing", 3: "Straight out"}
 
 LOAD_SWITCH = SwitchEntityDescription(
     key="load_switch",
@@ -50,9 +53,9 @@ class ZhiJinLoadSwitch(ZhiJinEntity, SwitchEntity):
         """The load output only follows this switch in manual (Cot) mode."""
         mode = self.coordinator.data.get("load_mode")
         if mode != 0:
-            name = LOAD_MODES.get(mode, f"code {mode}")
+            name = LOAD_MODE_NAMES.get(mode, f"code {mode}")
             raise HomeAssistantError(
-                f"The load mode is '{name}', not manual (Cot). Set menu 5 on the "
+                f"The load mode is '{name}', not Manual (Cot). Set menu 5 on the "
                 "controller (or the load mode select) to Cot to switch the load from here."
             )
 

@@ -22,7 +22,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .coordinator import ZhiJinCoordinator
 from .entity import ZhiJinEntity
-from .protocol import BATTERY_TYPES, LOAD_MODES
+from .protocol import BATTERY_TYPES, LOAD_MODES, PV_STATES, SYSTEM_VOLTAGES
 
 
 def _diagnostic(key: str, *, enabled: bool = False) -> SensorEntityDescription:
@@ -98,12 +98,26 @@ SENSORS: tuple[SensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         icon="mdi:cog",
     ),
+    SensorEntityDescription(
+        key="system_voltage_name",
+        translation_key="system_voltage_name",
+        device_class=SensorDeviceClass.ENUM,
+        options=list(SYSTEM_VOLTAGES.values()),
+        entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:car-battery",
+    ),
+    SensorEntityDescription(
+        key="pv_state",
+        translation_key="pv_state",
+        device_class=SensorDeviceClass.ENUM,
+        options=list(PV_STATES.values()),
+        icon="mdi:weather-sunny",
+    ),
     # Raw registers whose meaning is not known (yet). Disabled by default, enable
     # them to watch how they change.
     _diagnostic("load_mode"),
     _diagnostic("setting_1002"),
     _diagnostic("setting_1003"),
-    _diagnostic("setting_1008"),
     _diagnostic("register_1"),
     _diagnostic("register_6"),
     _diagnostic("register_8"),

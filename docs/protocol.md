@@ -30,21 +30,26 @@ Modbus-RTU style: `addr func … crc16`, CRC16 poly 0xA001, init 0xFFFF, low byt
 | 7 | actual load output (lags a command by seconds) |
 | 9 | total generation, ×0.1 Ah |
 | 10 | charge stage (3 = float, assumed) |
-| 1, 6, 8 | unknown |
+| 6 | photovoltaic state as shown by the app: 0 night, 1 day |
+| 1, 8 | unknown (8 is 0 while the app shows "wind close") |
 
 ### Settings registers
 | Reg | Meaning | Writable range (raw) |
 |---|---|---|
-| 0x1001 | battery type: 1 lithium, 2 gel, 3 lead-acid/LiFePO4 | 1–3 (untested on hardware) |
+| 0x1001 | battery type: 1 lithium, 2 gel, 3 lead-acid/LiFePO4 | 1–3 (the app writes it the same way) |
 | 0x1002 | unknown | not written |
 | 0x1004 | floating charge voltage ×0.1 V | 120–145 |
 | 0x1006 | discharge cut-off ×0.1 V | 90–115 |
 | 0x1007 | load on/off (takes effect immediately) | 0–1 |
 | 0x1009 | discharge recovery ×0.1 V | 110–130 |
-| 0x1005 | load mode (menu 5): 0 Cot (manual), 1 Auto, 2 Time, 3 Out. The load switch (0x1007) is expected to work in Cot only | 0–3 (untested on hardware) |
-| 0x1003, 0x1008 | unknown | not written |
+| 0x1005 | load mode (menu 5): 0 Cot (app: Manual), 1 Auto (Automatic), 2 Time (Timing), 3 Out (Straight out). The load switch (0x1007) is expected to work in Cot only | 0–3 (untested from Home Assistant) |
+| 0x1008 | system voltage mode: 0 Auto, 1 12 V. The app lists 24, 36, 48, 60, 72 and 84 V too; codes 2..7 are the presumed order and unverified | 0–1 |
+| 0x1003 | unknown | not written |
 
-Ranges are the 12 V values from the BL917 manual; 24 V systems are not supported.
+The voltage ranges are the 12 V values from the BL917 manual; 24 V systems are not supported.
 
 ## Write
 Function 0x10, one register: `01 10 hh ll 00 01 02 vh vl crc`. The acknowledgement is the first 6 bytes echoed plus CRC (8 bytes). The app reads settings, writes, then reads settings again; the integration does the same and verifies the value.
+
+## Clock (not used by the integration)
+The app sets the controller clock with a write to slave 0 (broadcast style): `00 10 10 09 00 14 21 hh mm 00 …` followed by a fixed tail and the CRC, 20 registers. Two captures (22:32 and 22:40) differ only in the hour/minute bytes (`0x16 0x20`, `0x16 0x28`) and the CRC. The clock is read back with `00 03 10 09 00 14 90 D6`. The app also sends slave 0 frames `00 03 00 01 00 05 D5 D8` (device information, ASCII id) and `00 03 00 01 00 10 14 17` (no reply).

@@ -8,7 +8,8 @@
 - Batarya voltajı, yük akımı, şarj akımı (doğrulanmadı), sıcaklık, toplam üretim
 - **Yük aç/kapa anahtarı**
 - Ayarlar number olarak: floating şarj voltajı (12,0–14,5 V), deşarj geri dönüş (11,0–13,0 V), deşarj kesme (9,0–11,5 V); sınırlar kılavuzdan
-- Batarya tipi ve yük modu (menü 5: Cot / Auto / Zaman / Out) isteğe bağlı seçim kutuları olarak, varsayılan kapalı
+- Batarya tipi, yük modu (menü 5: Manuel / Otomatik / Zamanlı / Doğrudan çıkış) ve sistem voltajı modu (Otomatik / 12 V) isteğe bağlı seçim kutuları olarak, varsayılan kapalı
+- Fotovoltaik durumu (gece / gündüz) ve sistem voltajı modu sensörleri
 - Yük anahtarı yalnızca manuel (Cot) modda çalışır, diğer modlarda bunu söyler
 - Home Assistant Bluetooth adaptörü veya ESP32 Bluetooth proxy ile çalışır
 - Bağlantı teşhisi (son güncelleme, art arda hata, son hata, Bluetooth kaynağı, RSSI) ve tek bir Bluetooth adaptörü ya da ESP32 proxy seçme seçeneği
@@ -32,7 +33,7 @@ Kontrolcü tek bağlantı kabul eder ve kopmaların en yaygın nedeni zayıf sin
 ## Bilinen sınırlar
 - Yalnızca tek bir 12 V BL917 tipi cihazda denendi. 24 V desteklenmez.
 - Şarj akımı ölçeği, şarj aşaması kodları, manuel dışındaki yük modları ve batarya tipi yazma doğrulanmadı.
-- Yük modu ve batarya tipi yazma Home Assistant üzerinden doğrulanmadı.
+- Yük modu yazma Home Assistant üzerinden doğrulanmadı. Sistem voltajı modu yalnızca Otomatik ya da 12 V olarak ayarlanabilir; 24–84 V gösterilir ama yazılmaz.
 - "Yük çıkışı" sensörü komuttan birkaç saniye geç güncellenir; anahtar komut edilen durumu gösterir.
 - Tersine mühendislik ürünü protokol: [docs/protocol.md](docs/protocol.md). Ayar yazmak kendi sorumluluğundadır.
 

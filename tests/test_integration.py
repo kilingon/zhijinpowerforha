@@ -95,8 +95,8 @@ async def test_raw_registers_and_battery_type_select_are_disabled_by_default(has
     registry = er.async_get(hass)
     for platform, key in [
         ("sensor", "register_1"), ("sensor", "register_6"), ("sensor", "register_8"),
-        ("sensor", "setting_1002"), ("sensor", "setting_1003"), ("sensor", "setting_1008"),
-        ("sensor", "load_mode"), ("select", "battery_type"), ("select", "load_mode_select"),
+        ("sensor", "setting_1002"), ("sensor", "setting_1003"),
+        ("sensor", "load_mode"), ("select", "battery_type"), ("select", "load_mode_select"), ("select", "system_voltage_select"),
     ]:
         entry = registry.async_get(eid(hass, platform, key))
         assert entry.disabled_by is er.RegistryEntryDisabler.INTEGRATION, key
@@ -299,7 +299,7 @@ async def test_load_switch_refuses_when_not_in_manual_mode(hass, radio, controll
     controller.reg[0x1005] = 1  # auto
     await setup_entry(hass)
     controller.log.clear()
-    with pytest.raises(HomeAssistantError, match="not manual"):
+    with pytest.raises(HomeAssistantError, match="not Manual"):
         await call(hass, "switch", "turn_off", "switch", "load_switch")
     assert controller.log == []
 
@@ -317,7 +317,45 @@ async def test_load_mode_select(hass, radio, controller):
     assert controller.reg[0x1005] == 2
     assert state(hass, "select", "load_mode_select").state == "timer"
     # the switch is locked now, the mode can be put back
-    with pytest.raises(HomeAssistantError, match="not manual"):
+    with pytest.raises(HomeAssistantError, match="not Manual"):
         await call(hass, "switch", "turn_on", "switch", "load_switch")
     await call(hass, "select", "select_option", "select", "load_mode_select", option="manual")
     assert controller.reg[0x1005] == 0
+
+
+async def test_system_voltage_and_pv_state_are_shown(hass, radio, controller):
+    await setup_entry(hass)
+    assert state(hass, "sensor", "system_voltage_name").state == "12v"
+    assert state(hass, "sensor", "pv_state").state == "night"
+    controller.status[5] = 1
+    await poll(hass)
+    assert state(hass, "sensor", "pv_state").state == "day"
+
+
+async def test_system_voltage_select(hass, radio, controller):
+    entry = await setup_entry(hass)
+    er.async_get(hass).async_update_entity(eid(hass, "select", "system_voltage_select"), disabled_by=None)
+    await hass.config_entries.async_reload(entry.entry_id)
+    await hass.async_block_till_done()
+
+    select = state(hass, "select", "system_voltage_select")
+    assert select.state == "12v"
+    assert select.attributes["options"] == ["auto", "12v"]
+    await call(hass, "select", "select_option", "select", "system_voltage_select", option="auto")
+    assert controller.reg[0x1008] == 0
+    assert state(hass, "select", "system_voltage_select").state == "auto"
+    # voltages can still be written in Auto
+    await call(hass, "number", "set_value", "number", "float_voltage", value=14.3)
+    assert controller.reg[0x1004] == 143
+    await call(hass, "select", "select_option", "select", "system_voltage_select", option="12v")
+    assert controller.reg[0x1008] == 1
+
+
+async def test_voltages_are_not_written_when_the_system_is_not_12v(hass, radio, controller):
+    controller.reg[0x1008] = 3  # 36 V on the controller
+    await setup_entry(hass)
+    assert state(hass, "sensor", "system_voltage_name").state == "36v"
+    controller.log.clear()
+    with pytest.raises(HomeAssistantError, match="system voltage mode"):
+        await call(hass, "number", "set_value", "number", "float_voltage", value=14.0)
+    assert controller.log == []

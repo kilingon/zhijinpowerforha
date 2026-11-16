@@ -8,7 +8,8 @@ Custom integration for Bluetooth LE MPPT solar charge controllers that use the *
 - Battery voltage, load current, charge current (unverified), temperature, total generation
 - **Load on/off switch**
 - Settings as number entities: floating charge voltage (12.0–14.5 V), discharge recovery (11.0–13.0 V), discharge cut-off (9.0–11.5 V), limits taken from the manual
-- Battery type and load mode (menu 5: Cot / Auto / Time / Out) as optional selects, disabled by default
+- Battery type, load mode (menu 5: Manual / Automatic / Timing / Straight out) and system voltage mode (Auto / 12 V) as optional selects, disabled by default
+- Photovoltaic state (night / day) and system voltage mode sensors
 - The load switch only works in manual (Cot) mode and says so otherwise
 - Works with any Home Assistant Bluetooth adapter or ESP32 Bluetooth proxy
 - Connection diagnostics (last update, failed polls, last error, Bluetooth source, RSSI) and an option to pin one Bluetooth adapter or ESP32 proxy
@@ -32,7 +33,7 @@ The controller only accepts one connection and a weak signal is the most common 
 ## Known limitations
 - Tested on one 12 V BL917-type controller only. 24 V systems are not supported.
 - Charge current scale, charge stage codes, load modes other than manual and the battery type write are unverified.
-- Load mode and battery type writes are unverified from Home Assistant.
+- Load mode writes are unverified from Home Assistant. The system voltage mode can be set to Auto or 12 V only; 24–84 V are shown but not written.
 - The "Load output" sensor lags a switch command by several seconds; the switch shows the commanded state.
 - Reverse-engineered protocol, see [docs/protocol.md](docs/protocol.md). Writing settings is at your own risk.
 

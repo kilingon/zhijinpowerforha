@@ -27,7 +27,7 @@ class FakeController:
             0x1005: 0,  # load mode (menu 5): 0 manual / Cot
             0x1006: 108,  # cut-off 10.8 V
             0x1007: 1,  # load on
-            0x1008: 0,
+            0x1008: 1,  # system voltage mode: 1 = 12 V
             0x1009: 126,  # recovery 12.6 V
         }
         # status block, 10 registers (address 1..10). Index 6 is the actual load

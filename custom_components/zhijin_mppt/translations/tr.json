@@ -78,6 +78,13 @@
       "charge_stage": {
         "name": "Şarj aşaması kodu"
       },
+      "pv_state": {
+        "name": "Fotovoltaik durumu",
+        "state": {
+          "night": "Gece",
+          "day": "Gündüz"
+        }
+      },
       "battery_type_name": {
         "name": "Batarya tipi",
         "state": {
@@ -90,9 +97,22 @@
         "name": "Yük modu",
         "state": {
           "manual": "Manuel (Cot)",
-          "auto": "Auto",
-          "timer": "Zaman",
-          "output": "Out"
+          "auto": "Otomatik (Auto)",
+          "timer": "Zamanlı (Time)",
+          "output": "Doğrudan çıkış (Out)"
+        }
+      },
+      "system_voltage_name": {
+        "name": "Sistem voltajı modu",
+        "state": {
+          "auto": "Otomatik",
+          "12v": "12 V",
+          "24v": "24 V",
+          "36v": "36 V",
+          "48v": "48 V",
+          "60v": "60 V",
+          "72v": "72 V",
+          "84v": "84 V"
         }
       },
       "load_mode": {
@@ -103,9 +123,6 @@
       },
       "setting_1003": {
         "name": "Ayar 0x1003"
-      },
-      "setting_1008": {
-        "name": "Ayar 0x1008"
       },
       "register_1": {
         "name": "Register 1"
@@ -166,9 +183,16 @@
         "name": "Yük modu ayarı",
         "state": {
           "manual": "Manuel (Cot)",
-          "auto": "Auto",
-          "timer": "Zaman",
-          "output": "Out"
+          "auto": "Otomatik (Auto)",
+          "timer": "Zamanlı (Time)",
+          "output": "Doğrudan çıkış (Out)"
+        }
+      },
+      "system_voltage_select": {
+        "name": "Sistem voltajı modu ayarı",
+        "state": {
+          "auto": "Otomatik",
+          "12v": "12 V"
         }
       }
     }

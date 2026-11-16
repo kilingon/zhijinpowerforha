@@ -98,7 +98,7 @@ def test_load_frames_equal_the_ones_sent_by_the_app():
     [
         (0x1004, 146), (0x1004, 119), (0x1006, 116), (0x1006, 89), (0x1009, 131), (0x1009, 109),
         (0x1001, 0), (0x1001, 4), (0x1007, 2),
-        (0x1002, 0), (0x1003, 0), (0x1008, 0), (0x0001, 0), (0x2000, 1),
+        (0x1002, 0), (0x1003, 0), (0x0001, 0), (0x2000, 1),
     ],
 )
 def test_writes_outside_the_known_ranges_are_refused(register, value):
@@ -134,3 +134,18 @@ def test_load_mode_codes_and_write_frame():
     assert frame[:9] == bytes.fromhex("01 10 10 05 00 01 02 00 02")
     with pytest.raises(ValueError):
         p.build_write_frame(p.REG_LOAD_MODE, 4)
+
+
+def test_system_voltage_and_pv_state():
+    assert p.SYSTEM_VOLTAGES[0] == "auto" and p.SYSTEM_VOLTAGES[1] == "12v"
+    data = p.parse_settings(_frame([2, 0, 0, 145, 0, 108, 1, 1, 126], 18))
+    assert data["system_voltage"] == 1 and data["system_voltage_name"] == "12v"
+    assert p.parse_settings(_frame([2, 0, 0, 145, 0, 108, 1, 9, 126], 18))["system_voltage_name"] is None
+    assert p.build_write_frame(p.REG_SYSTEM_VOLTAGE, 1)[:9] == bytes.fromhex("01 10 10 08 00 01 02 00 01")
+    # only Auto and 12 V may be written
+    with pytest.raises(ValueError):
+        p.build_write_frame(p.REG_SYSTEM_VOLTAGE, 2)
+    day = p.parse_response(_frame([2, 124, 0, 0, 2060, 1, 0, 0, 7987, 3]))
+    night = p.parse_response(_frame([2, 124, 0, 0, 2060, 0, 0, 0, 7987, 3]))
+    odd = p.parse_response(_frame([2, 124, 0, 0, 2060, 5, 0, 0, 7987, 3]))
+    assert (day["pv_state"], night["pv_state"], odd["pv_state"]) == ("day", "night", None)

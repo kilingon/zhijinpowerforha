@@ -40,11 +40,24 @@ REG_FLOAT_VOLTAGE = 0x1004  # tenths of a volt
 REG_CUTOFF_VOLTAGE = 0x1006  # discharge cut-off, tenths of a volt
 REG_LOAD = 0x1007  # 1 = load on, 0 = load off
 REG_RECOVERY_VOLTAGE = 0x1009  # discharge recovery, tenths of a volt
+REG_SYSTEM_VOLTAGE = 0x1008  # system voltage mode: 0 Auto, 1 12 V (the app lists up to 84 V)
 LOAD_REGISTER = REG_LOAD
 
 # Keys are translated in translations/*.json (entity.select.battery_type.state ...)
 BATTERY_TYPES = {1: "lithium", 2: "gel", 3: "lead_acid"}
 LOAD_MODES = {0: "manual", 1: "auto", 2: "timer", 3: "output"}
+# Only 0 (Auto) and 1 (12 V) were seen in a capture of the app. The app also offers
+# 24, 36, 48, 60, 72 and 84 V; the codes 2..7 are the presumed order and unverified,
+# so they are shown but never written.
+SYSTEM_VOLTAGES = {
+    0: "auto", 1: "12v", 2: "24v", 3: "36v", 4: "48v", 5: "60v", 6: "72v", 7: "84v",
+}
+WRITABLE_SYSTEM_VOLTAGES = (0, 1)
+# Status register 6: photovoltaic state as shown by the app (0 night, 1 day)
+PV_STATES = {0: "night", 1: "day"}
+# The voltage limits below are for 12 V systems only, so voltages are only written
+# while the system voltage mode is one of these (Auto picks 12 V for a 12 V battery).
+VOLTAGE_WRITE_MODES = (0, 1)
 
 # Registers that may be written and the accepted raw range. The voltage limits
 # are the 12 V values from the controller manual (BL917), in tenths of a volt.
@@ -54,6 +67,7 @@ WRITABLE: dict[int, tuple[int, int]] = {
     REG_CUTOFF_VOLTAGE: (90, 115),
     REG_LOAD: (0, 1),
     REG_LOAD_MODE: (0, 3),
+    REG_SYSTEM_VOLTAGE: (0, 1),
     REG_RECOVERY_VOLTAGE: (110, 130),
 }
 ACK_LENGTH = 8
@@ -103,6 +117,7 @@ def parse_response(frame: bytes) -> dict[str, Any]:
         "charge_stage": regs[9],  # address 10, 3 = float (assumed)
         # unknown registers, exposed as disabled diagnostic sensors
         "register_1": regs[0],
+        "pv_state": PV_STATES.get(regs[5]),  # address 6, None if unknown
         "register_6": regs[5],
         "register_8": regs[7],
     }
@@ -122,7 +137,8 @@ def parse_settings(frame: bytes) -> dict[str, Any]:
         "load_setting": regs[6] == 1,  # commanded load state, updates at once
         "setting_1002": regs[1],
         "setting_1003": regs[2],
-        "setting_1008": regs[7],
+        "system_voltage": regs[7],
+        "system_voltage_name": SYSTEM_VOLTAGES.get(regs[7]),  # None if unknown
         "_settings_raw": {SETTINGS_FIRST_REGISTER + i: v for i, v in enumerate(regs)},
     }
 

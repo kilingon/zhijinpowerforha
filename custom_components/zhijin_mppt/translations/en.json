@@ -78,6 +78,13 @@
       "charge_stage": {
         "name": "Charge stage code"
       },
+      "pv_state": {
+        "name": "Photovoltaic state",
+        "state": {
+          "night": "Night",
+          "day": "Day"
+        }
+      },
       "battery_type_name": {
         "name": "Battery type",
         "state": {
@@ -90,9 +97,22 @@
         "name": "Load mode",
         "state": {
           "manual": "Manual (Cot)",
+          "auto": "Automatic (Auto)",
+          "timer": "Timing (Time)",
+          "output": "Straight out (Out)"
+        }
+      },
+      "system_voltage_name": {
+        "name": "System voltage mode",
+        "state": {
           "auto": "Auto",
-          "timer": "Time",
-          "output": "Out"
+          "12v": "12 V",
+          "24v": "24 V",
+          "36v": "36 V",
+          "48v": "48 V",
+          "60v": "60 V",
+          "72v": "72 V",
+          "84v": "84 V"
         }
       },
       "load_mode": {
@@ -103,9 +123,6 @@
       },
       "setting_1003": {
         "name": "Setting 0x1003"
-      },
-      "setting_1008": {
-        "name": "Setting 0x1008"
       },
       "register_1": {
         "name": "Register 1"
@@ -166,9 +183,16 @@
         "name": "Load mode setting",
         "state": {
           "manual": "Manual (Cot)",
+          "auto": "Automatic (Auto)",
+          "timer": "Timing (Time)",
+          "output": "Straight out (Out)"
+        }
+      },
+      "system_voltage_select": {
+        "name": "System voltage mode setting",
+        "state": {
           "auto": "Auto",
-          "timer": "Time",
-          "output": "Out"
+          "12v": "12 V"
         }
       }
     }
