@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.2
+- **New:** option "Bluetooth adapter / proxy": connect only through one chosen adapter or ESP32 proxy instead of letting Home Assistant switch between several. If the chosen one cannot hear the controller, the entities become unavailable (set it back to Auto to undo).
+- **New:** connection diagnostic sensors that stay available when the controller cannot be reached: last update, failed polls in a row, last error, Bluetooth source and signal strength (RSSI).
+- **Changed:** a single failed poll no longer makes every entity unavailable. The last values are kept, and the entities become unavailable after 3 failed polls in a row. From then on the polling backs off (up to 5 minutes) until the controller answers again.
+- Tests for all of the above (79 in total).
+
 ## 0.5.1
 - Fix hassfest: the translation text no longer contains `<address>` (read as HTML).
 - Add the integration icon (`brand/icon.png`) required by HACS.

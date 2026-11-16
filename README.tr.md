@@ -11,6 +11,7 @@
 - Batarya tipi ve yük modu (menü 5: Cot / Auto / Zaman / Out) isteğe bağlı seçim kutuları olarak, varsayılan kapalı
 - Yük anahtarı yalnızca manuel (Cot) modda çalışır, diğer modlarda bunu söyler
 - Home Assistant Bluetooth adaptörü veya ESP32 Bluetooth proxy ile çalışır
+- Bağlantı teşhisi (son güncelleme, art arda hata, son hata, Bluetooth kaynağı, RSSI) ve tek bir Bluetooth adaptörü ya da ESP32 proxy seçme seçeneği
 - Tanılama indirme (adres gizlenir), sorgulama aralığı seçeneği (10–600 sn)
 
 ## Kurulum
@@ -24,6 +25,9 @@ Ayarlar → Cihazlar ve hizmetler → Entegrasyon ekle → *ZhiJinPower MPPT*.
 2. Görmüyorsa Bluetooth adresini (`AA:BB:CC:DD:EE:FF` ya da `ZJBE-AABBCCDDEEFF`) yaz.
 
 **Önce telefon uygulamasını kapat.** Kontrolcü aynı anda tek bağlantı kabul eder. Home Assistant her sorguda (varsayılan 60 sn) kısa süre bağlanır; uygulama aradaki sürede bağlanabilir.
+
+## Bağlantı ipuçları
+Kontrolcü tek bağlantı kabul eder ve kopmaların en yaygın nedeni zayıf sinyaldir. "Sinyal gücü" teşhis sensörüne bak: yaklaşık -75 dBm'den iyi, ideal olarak -70 ve üstü olsun. Bluetooth proxy'yi (ESP32, `active: true` ile `bluetooth_proxy`) ya da adaptörü kontrolcüye yaklaştır. Birden fazla adaptör ya da proxy kontrolcüyü duyuyorsa, entegrasyon seçeneklerinden birini sabitleyebilirsin.
 
 ## Bilinen sınırlar
 - Yalnızca tek bir 12 V BL917 tipi cihazda denendi. 24 V desteklenmez.

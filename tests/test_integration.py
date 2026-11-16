@@ -199,17 +199,76 @@ async def test_not_in_range_at_startup_retries_later(hass, radio):
     assert entry.state is ConfigEntryState.SETUP_RETRY
 
 
-async def test_entities_become_unavailable_and_recover(hass, radio, controller):
+async def test_a_failed_poll_keeps_the_last_values(hass, radio, controller):
     await setup_entry(hass)
     controller.silent = True
     await poll(hass)
+    assert state(hass, "sensor", "battery_voltage").state == "12.4"
+    assert state(hass, "switch", "load_switch").state == STATE_ON
+    assert state(hass, "sensor", "failed_polls").state == "1"
+    assert "Error talking" in state(hass, "sensor", "last_error").state
+
+
+async def test_entities_become_unavailable_after_three_failures_and_recover(hass, radio, controller):
+    entry = await setup_entry(hass)
+    controller.silent = True
+    for _ in range(3):
+        await poll(hass)
     assert state(hass, "sensor", "battery_voltage").state == STATE_UNAVAILABLE
     assert state(hass, "switch", "load_switch").state == STATE_UNAVAILABLE
+    # the connection diagnostics stay available exactly then
+    assert state(hass, "sensor", "failed_polls").state == "3"
+    assert state(hass, "sensor", "last_error").state != STATE_UNAVAILABLE
+    # and the polling backs off
+    assert entry.runtime_data.update_interval == timedelta(seconds=2 * DEFAULT_SCAN_INTERVAL)
 
     controller.silent = False
     controller.status[1] = 130
     await poll(hass, seconds=2 * DEFAULT_SCAN_INTERVAL + 10)
     assert state(hass, "sensor", "battery_voltage").state == "13.0"
+    assert state(hass, "sensor", "failed_polls").state == "0"
+    assert state(hass, "sensor", "last_error").state == "unknown"
+    assert entry.runtime_data.update_interval == timedelta(seconds=DEFAULT_SCAN_INTERVAL)
+
+
+async def test_connection_diagnostics(hass, radio):
+    await setup_entry(hass)
+    assert state(hass, "sensor", "bluetooth_source").state == "local"
+    assert state(hass, "sensor", "signal_strength").state == "-61"
+    assert state(hass, "sensor", "failed_polls").state == "0"
+    assert state(hass, "sensor", "last_update").state not in ("unknown", STATE_UNAVAILABLE)
+
+
+async def test_preferred_adapter_is_used(hass, radio):
+    radio.hearing = {"local": -61, "proxy": -83}
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={CONF_ADDRESS: ADDRESS},
+        options={"adapter": "proxy"},
+        unique_id=ADDRESS,
+        title=NAME,
+    )
+    entry.add_to_hass(hass)
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    assert entry.state is ConfigEntryState.LOADED
+    assert state(hass, "sensor", "bluetooth_source").state == "proxy"
+    assert state(hass, "sensor", "signal_strength").state == "-83"
+
+
+async def test_preferred_adapter_that_cannot_see_the_controller(hass, radio):
+    radio.hearing = {"local": -61}
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={CONF_ADDRESS: ADDRESS},
+        options={"adapter": "proxy"},
+        unique_id=ADDRESS,
+        title=NAME,
+    )
+    entry.add_to_hass(hass)
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    assert entry.state is ConfigEntryState.SETUP_RETRY
 
 
 async def test_unload(hass, radio):

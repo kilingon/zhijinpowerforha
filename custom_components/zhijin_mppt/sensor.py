@@ -1,6 +1,8 @@
 """Sensors for the ZhiJinPower MPPT integration."""
 from __future__ import annotations
 
+from typing import Any
+
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
@@ -10,6 +12,7 @@ from homeassistant.components.sensor import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     EntityCategory,
+    SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
     UnitOfElectricCurrent,
     UnitOfElectricPotential,
     UnitOfTemperature,
@@ -107,6 +110,53 @@ SENSORS: tuple[SensorEntityDescription, ...] = (
 )
 
 
+# Connection diagnostics. They stay available when the controller cannot be reached,
+# that is when they are most useful. Values come from the coordinator, not the controller.
+CONNECTION_SENSORS: tuple[SensorEntityDescription, ...] = (
+    SensorEntityDescription(
+        key="last_update",
+        translation_key="last_update",
+        device_class=SensorDeviceClass.TIMESTAMP,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SensorEntityDescription(
+        key="failed_polls",
+        translation_key="failed_polls",
+        state_class=SensorStateClass.MEASUREMENT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:alert-circle-outline",
+    ),
+    SensorEntityDescription(
+        key="last_error",
+        translation_key="last_error",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:message-alert-outline",
+    ),
+    SensorEntityDescription(
+        key="bluetooth_source",
+        translation_key="bluetooth_source",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:bluetooth-connect",
+    ),
+    SensorEntityDescription(
+        key="signal_strength",
+        translation_key="signal_strength",
+        device_class=SensorDeviceClass.SIGNAL_STRENGTH,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+)
+
+_CONNECTION_ATTRIBUTES = {
+    "last_update": "last_success",
+    "failed_polls": "failed_polls",
+    "last_error": "last_error",
+    "bluetooth_source": "bluetooth_source",
+    "signal_strength": "signal_strength",
+}
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
@@ -115,6 +165,9 @@ async def async_setup_entry(
     """Set up the sensors."""
     coordinator: ZhiJinCoordinator = entry.runtime_data
     async_add_entities(ZhiJinSensor(coordinator, desc) for desc in SENSORS)
+    async_add_entities(
+        ZhiJinConnectionSensor(coordinator, desc) for desc in CONNECTION_SENSORS
+    )
 
 
 class ZhiJinSensor(ZhiJinEntity, SensorEntity):
@@ -123,3 +176,17 @@ class ZhiJinSensor(ZhiJinEntity, SensorEntity):
     @property
     def native_value(self) -> float | int | str | None:
         return self.coordinator.data.get(self.entity_description.key)
+
+
+class ZhiJinConnectionSensor(ZhiJinEntity, SensorEntity):
+    """How the connection to the controller is doing. Always available."""
+
+    @property
+    def available(self) -> bool:
+        return True
+
+    @property
+    def native_value(self) -> Any:
+        return getattr(
+            self.coordinator, _CONNECTION_ATTRIBUTES[self.entity_description.key]
+        )

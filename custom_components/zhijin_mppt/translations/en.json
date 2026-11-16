@@ -48,10 +48,12 @@
       "init": {
         "title": "ZhiJinPower MPPT options",
         "data": {
-          "scan_interval": "Polling interval (seconds)"
+          "scan_interval": "Polling interval (seconds)",
+          "adapter": "Bluetooth adapter / proxy"
         },
         "data_description": {
-          "scan_interval": "How often Home Assistant connects to the controller. The controller accepts one connection at a time, so the phone app can only connect between polls."
+          "scan_interval": "How often Home Assistant connects to the controller. The controller accepts one connection at a time, so the phone app can only connect between polls.",
+          "adapter": "Connect only through this adapter or proxy. Auto lets Home Assistant choose, which can switch between several. If the selected one cannot see the controller, the entities become unavailable."
         }
       }
     }
@@ -113,6 +115,21 @@
       },
       "register_8": {
         "name": "Register 8"
+      },
+      "last_update": {
+        "name": "Last update"
+      },
+      "failed_polls": {
+        "name": "Failed polls in a row"
+      },
+      "last_error": {
+        "name": "Last error"
+      },
+      "bluetooth_source": {
+        "name": "Bluetooth source"
+      },
+      "signal_strength": {
+        "name": "Signal strength"
       }
     },
     "binary_sensor": {

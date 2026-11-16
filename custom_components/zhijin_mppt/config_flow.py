@@ -24,10 +24,16 @@ from homeassistant.helpers.selector import (
     NumberSelector,
     NumberSelectorConfig,
     NumberSelectorMode,
+    SelectOptionDict,
+    SelectSelector,
+    SelectSelectorConfig,
+    SelectSelectorMode,
 )
 
 from .connection import COMMUNICATION_ERRORS, async_read_status
 from .const import (
+    ADAPTER_AUTO,
+    CONF_ADAPTER,
     CONF_SCAN_INTERVAL,
     CONF_SKIP_TEST,
     DEFAULT_SCAN_INTERVAL,
@@ -248,16 +254,35 @@ class ZhiJinConfigFlow(ConfigFlow, domain=DOMAIN):
 
 
 class ZhiJinOptionsFlow(OptionsFlow):
-    """Options: how often the controller is polled."""
+    """Options: polling interval and which Bluetooth adapter / proxy to use."""
+
+    def _adapter_options(self) -> list[SelectOptionDict]:
+        options = [SelectOptionDict(value=ADAPTER_AUTO, label="Auto / Otomatik")]
+        known = set()
+        for scanner in bluetooth.async_current_scanners(self.hass):
+            known.add(scanner.source)
+            options.append(
+                SelectOptionDict(
+                    value=scanner.source, label=f"{scanner.name} ({scanner.source})"
+                )
+            )
+        saved = self.config_entry.options.get(CONF_ADAPTER, ADAPTER_AUTO)
+        if saved != ADAPTER_AUTO and saved not in known:
+            options.append(SelectOptionDict(value=saved, label=f"{saved} (not connected)"))
+        return options
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         if user_input is not None:
             return self.async_create_entry(
-                data={CONF_SCAN_INTERVAL: int(user_input[CONF_SCAN_INTERVAL])}
+                data={
+                    CONF_SCAN_INTERVAL: int(user_input[CONF_SCAN_INTERVAL]),
+                    CONF_ADAPTER: user_input.get(CONF_ADAPTER, ADAPTER_AUTO),
+                }
             )
         current = self.config_entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+        adapter = self.config_entry.options.get(CONF_ADAPTER, ADAPTER_AUTO)
         schema = vol.Schema(
             {
                 vol.Required(CONF_SCAN_INTERVAL, default=current): NumberSelector(
@@ -268,7 +293,13 @@ class ZhiJinOptionsFlow(OptionsFlow):
                         unit_of_measurement="s",
                         mode=NumberSelectorMode.BOX,
                     )
-                )
+                ),
+                vol.Optional(CONF_ADAPTER, default=adapter): SelectSelector(
+                    SelectSelectorConfig(
+                        options=self._adapter_options(),
+                        mode=SelectSelectorMode.DROPDOWN,
+                    )
+                ),
             }
         )
         return self.async_show_form(step_id="init", data_schema=schema)

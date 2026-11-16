@@ -1,6 +1,7 @@
 """Fixtures: a fake controller and a fake Bluetooth stack."""
 from __future__ import annotations
 
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from bleak.backends.device import BLEDevice
@@ -63,6 +64,15 @@ class Radio:
     def __init__(self) -> None:
         self.in_range = True
         self.discovered: list[BluetoothServiceInfoBleak] = []
+        # scanners (adapters / proxies) that currently hear the controller, with RSSI
+        self.hearing: dict[str, int] = {"local": -61}
+        # every scanner Home Assistant knows, with its display name
+        self.scanners: dict[str, str] = {"local": "Local adapter", "proxy": "Proxy"}
+
+    def best(self) -> tuple[str, int] | None:
+        if not self.in_range or not self.hearing:
+            return None
+        return max(self.hearing.items(), key=lambda item: item[1])
 
 
 @pytest.fixture
@@ -80,6 +90,33 @@ def radio(mock_bluetooth, controller):
             side_effect=lambda hass, address, connectable=True: ble_device
             if state.in_range
             else None,
+        ),
+        patch(
+            "homeassistant.components.bluetooth.async_scanner_devices_by_address",
+            side_effect=lambda hass, address, connectable=True: [
+                SimpleNamespace(
+                    scanner=SimpleNamespace(source=source, name=state.scanners.get(source, source)),
+                    ble_device=ble_device,
+                    advertisement=SimpleNamespace(rssi=rssi),
+                )
+                for source, rssi in state.hearing.items()
+                if state.in_range
+            ],
+        ),
+        patch(
+            "homeassistant.components.bluetooth.async_last_service_info",
+            side_effect=lambda hass, address, connectable=True: SimpleNamespace(
+                source=state.best()[0], rssi=state.best()[1]
+            )
+            if state.best()
+            else None,
+        ),
+        patch(
+            "homeassistant.components.bluetooth.async_current_scanners",
+            side_effect=lambda hass: [
+                SimpleNamespace(source=source, name=name)
+                for source, name in state.scanners.items()
+            ],
         ),
         patch(
             "custom_components.zhijin_mppt.config_flow.async_discovered_service_info",

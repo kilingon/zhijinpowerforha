@@ -11,6 +11,7 @@ from homeassistant.const import CONF_ADDRESS
 from homeassistant.data_entry_flow import FlowResultType
 
 from custom_components.zhijin_mppt.const import (
+    CONF_ADAPTER,
     CONF_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL,
     CONF_SKIP_TEST,
@@ -233,6 +234,29 @@ async def test_options_flow_changes_the_polling_interval(hass, radio):
     assert result["type"] is FlowResultType.CREATE_ENTRY
     await hass.async_block_till_done()
 
-    assert entry.options == {CONF_SCAN_INTERVAL: 90}
+    assert entry.options == {CONF_SCAN_INTERVAL: 90, CONF_ADAPTER: "auto"}
     assert entry.state is ConfigEntryState.LOADED
     assert entry.runtime_data.update_interval == timedelta(seconds=90)
+
+
+async def test_options_flow_offers_the_known_adapters_and_saves_the_choice(hass, radio):
+    entry = MockConfigEntry(
+        domain=DOMAIN, data={CONF_ADDRESS: ADDRESS}, unique_id=ADDRESS, title=NAME
+    )
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    schema = result["data_schema"].schema
+    selector = next(v for k, v in schema.items() if k == CONF_ADAPTER)
+    values = [option["value"] for option in selector.config["options"]]
+    assert values == ["auto", "local", "proxy"]
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {CONF_SCAN_INTERVAL: 60, CONF_ADAPTER: "local"}
+    )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    await hass.async_block_till_done()
+    assert entry.options[CONF_ADAPTER] == "local"
+    assert entry.runtime_data.preferred_source == "local"

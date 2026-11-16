@@ -48,10 +48,12 @@
       "init": {
         "title": "ZhiJinPower MPPT seçenekleri",
         "data": {
-          "scan_interval": "Sorgulama aralığı (saniye)"
+          "scan_interval": "Sorgulama aralığı (saniye)",
+          "adapter": "Bluetooth adaptörü / proxy"
         },
         "data_description": {
-          "scan_interval": "Home Assistant'ın kontrolcüye ne sıklıkla bağlanacağı. Kontrolcü aynı anda tek bağlantı kabul ettiği için telefon uygulaması yalnızca sorgular arasında bağlanabilir."
+          "scan_interval": "Home Assistant'ın kontrolcüye ne sıklıkla bağlanacağı. Kontrolcü aynı anda tek bağlantı kabul ettiği için telefon uygulaması yalnızca sorgular arasında bağlanabilir.",
+          "adapter": "Yalnızca bu adaptör ya da proxy üzerinden bağlan. Otomatik seçeneği seçimi Home Assistant'a bırakır, birden fazla tarayıcı arasında geçiş yapabilir. Seçilen kontrolcüyü göremezse varlıklar kullanılamaz olur."
         }
       }
     }
@@ -113,6 +115,21 @@
       },
       "register_8": {
         "name": "Register 8"
+      },
+      "last_update": {
+        "name": "Son güncelleme"
+      },
+      "failed_polls": {
+        "name": "Art arda başarısız sorgu"
+      },
+      "last_error": {
+        "name": "Son hata"
+      },
+      "bluetooth_source": {
+        "name": "Bluetooth kaynağı"
+      },
+      "signal_strength": {
+        "name": "Sinyal gücü"
       }
     },
     "binary_sensor": {

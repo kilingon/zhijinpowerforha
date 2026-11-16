@@ -4,6 +4,15 @@ DOMAIN = "zhijin_mppt"
 
 CONF_SCAN_INTERVAL = "scan_interval"
 CONF_SKIP_TEST = "skip_test"
+CONF_ADAPTER = "adapter"  # Bluetooth adapter / proxy to use, or ADAPTER_AUTO
+ADAPTER_AUTO = "auto"
+
+# A failed poll keeps the last values; the entities only become unavailable after
+# this many failed polls in a row. From then on the polling backs off, up to
+# MAX_BACKOFF_INTERVAL seconds, so a controller that cannot be reached is not
+# bothered with connection attempts all the time.
+MAX_TOLERATED_FAILURES = 3
+MAX_BACKOFF_INTERVAL = 300
 
 # The controller accepts only one Bluetooth connection at a time. The integration
 # connects briefly for every poll and disconnects again, so that the phone app can
