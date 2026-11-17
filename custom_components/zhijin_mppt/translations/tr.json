@@ -75,9 +75,6 @@
       "total_generation": {
         "name": "Toplam üretim"
       },
-      "charge_stage": {
-        "name": "Şarj aşaması kodu"
-      },
       "pv_state": {
         "name": "Fotovoltaik durumu",
         "state": {
@@ -90,7 +87,11 @@
         "state": {
           "lithium": "Lityum (b01)",
           "gel": "Jel (b02)",
-          "lead_acid": "Kurşun-asit / LiFePO4 (b03)"
+          "lead_acid": "Kurşun-asit / LiFePO4 (b03)",
+          "open_lead_acid": "Açık kurşun-asit",
+          "ternary_lithium": "Üçlü lityum",
+          "lifepo4": "LiFePO4",
+          "flooded": "Sıvı elektrolitli"
         }
       },
       "load_mode_name": {
@@ -112,17 +113,12 @@
           "48v": "48 V",
           "60v": "60 V",
           "72v": "72 V",
-          "84v": "84 V"
+          "84v": "84 V",
+          "96v": "96 V"
         }
       },
       "load_mode": {
         "name": "Yük modu kodu"
-      },
-      "setting_1002": {
-        "name": "Ayar 0x1002"
-      },
-      "setting_1003": {
-        "name": "Ayar 0x1003"
       },
       "register_1": {
         "name": "Register 1"
@@ -147,11 +143,32 @@
       },
       "signal_strength": {
         "name": "Sinyal gücü"
+      },
+      "battery_percent": {
+        "name": "Batarya seviyesi"
+      },
+      "solar_power": {
+        "name": "Güneş gücü"
+      },
+      "total_generation_combined": {
+        "name": "Toplam üretim (sayaç dahil)"
+      },
+      "charge_resets": {
+        "name": "Üretim sayacı"
       }
     },
     "binary_sensor": {
       "load_on": {
         "name": "Yük çıkışı"
+      },
+      "pv_day": {
+        "name": "Gün ışığı"
+      },
+      "wind_on": {
+        "name": "Rüzgar girişi"
+      },
+      "connectivity": {
+        "name": "Bağlantı"
       }
     },
     "switch": {
@@ -168,6 +185,12 @@
       },
       "cutoff_voltage": {
         "name": "Deşarj kesme voltajı"
+      },
+      "timer_hours": {
+        "name": "Zamanlama saati"
+      },
+      "timer_minutes": {
+        "name": "Zamanlama dakikası"
       }
     },
     "select": {
@@ -195,6 +218,12 @@
           "12v": "12 V"
         }
       }
+    }
+  },
+  "issues": {
+    "unreachable": {
+      "title": "ZhiJinPower kontrolcüsüne ulaşılamıyor",
+      "description": "{name} birkaç dakikadır yanıt vermiyor. Bluetooth adaptörünün veya proxy'nin yakın olduğunu ve telefon uygulamasının kapalı olduğunu kontrol edin. Kontrolcü yeniden yanıt verince bu uyarı kendiliğinden kalkar."
     }
   }
 }

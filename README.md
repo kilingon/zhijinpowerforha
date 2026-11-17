@@ -32,7 +32,7 @@ The controller only accepts one connection and a weak signal is the most common 
 
 ## Known limitations
 - Tested on one 12 V BL917-type controller only. 24 V systems are not supported.
-- Charge current scale, charge stage codes, load modes other than manual and the battery type write are unverified.
+- Charge current scale, the generation counter, load modes other than manual and the battery type write are unverified.
 - Load mode writes are unverified from Home Assistant. The system voltage mode can be set to Auto or 12 V only; 24–84 V are shown but not written.
 - The "Load output" sensor lags a switch command by several seconds; the switch shows the commanded state.
 - Reverse-engineered protocol, see [docs/protocol.md](docs/protocol.md). Writing settings is at your own risk.
@@ -41,3 +41,4 @@ The controller only accepts one connection and a weak signal is the most common 
 `pip install -r requirements_test.txt && pytest`
 
 MIT licensed. Not affiliated with ZhiJinPower.
+

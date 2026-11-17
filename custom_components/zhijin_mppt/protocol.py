@@ -38,6 +38,8 @@ REG_BATTERY_TYPE = 0x1001  # 1 lithium (b01), 2 gel (b02), 3 lead-acid/LiFePO4 (
 REG_LOAD_MODE = 0x1005  # menu 5, load mode: 0 Cot (manual), 1 Auto, 2 Time, 3 Out
 REG_FLOAT_VOLTAGE = 0x1004  # tenths of a volt
 REG_CUTOFF_VOLTAGE = 0x1006  # discharge cut-off, tenths of a volt
+REG_TIMER_HOURS = 0x1002  # timing mode: hours (0..12), from the app's value list
+REG_TIMER_MINUTES = 0x1003  # timing mode: minutes (0..60)
 REG_LOAD = 0x1007  # 1 = load on, 0 = load off
 REG_RECOVERY_VOLTAGE = 0x1009  # discharge recovery, tenths of a volt
 REG_SYSTEM_VOLTAGE = 0x1008  # system voltage mode: 0 Auto, 1 12 V (the app lists up to 84 V)
@@ -45,12 +47,19 @@ LOAD_REGISTER = REG_LOAD
 
 # Keys are translated in translations/*.json (entity.select.battery_type.state ...)
 BATTERY_TYPES = {1: "lithium", 2: "gel", 3: "lead_acid"}
+# Seen in the app's value list and in two other projects, never seen on a controller
+# here: shown by the sensor but never written.
+BATTERY_TYPES_READ_ONLY = {
+    4: "open_lead_acid", 5: "ternary_lithium", 6: "lifepo4", 7: "flooded",
+}
+ALL_BATTERY_TYPES = {**BATTERY_TYPES, **BATTERY_TYPES_READ_ONLY}
 LOAD_MODES = {0: "manual", 1: "auto", 2: "timer", 3: "output"}
 # Only 0 (Auto) and 1 (12 V) were seen in a capture of the app. The app also offers
-# 24, 36, 48, 60, 72 and 84 V; the codes 2..7 are the presumed order and unverified,
+# 24, 36, 48, 60, 72, 84 and 96 V; the codes 2..8 are the presumed order and unverified,
 # so they are shown but never written.
 SYSTEM_VOLTAGES = {
     0: "auto", 1: "12v", 2: "24v", 3: "36v", 4: "48v", 5: "60v", 6: "72v", 7: "84v",
+    8: "96v",
 }
 WRITABLE_SYSTEM_VOLTAGES = (0, 1)
 # Status register 6: photovoltaic state as shown by the app (0 night, 1 day)
@@ -63,6 +72,8 @@ VOLTAGE_WRITE_MODES = (0, 1)
 # are the 12 V values from the controller manual (BL917), in tenths of a volt.
 WRITABLE: dict[int, tuple[int, int]] = {
     REG_BATTERY_TYPE: (1, 3),
+    REG_TIMER_HOURS: (0, 12),
+    REG_TIMER_MINUTES: (0, 60),
     REG_FLOAT_VOLTAGE: (120, 145),
     REG_CUTOFF_VOLTAGE: (90, 115),
     REG_LOAD: (0, 1),
@@ -71,6 +82,17 @@ WRITABLE: dict[int, tuple[int, int]] = {
     REG_RECOVERY_VOLTAGE: (110, 130),
 }
 ACK_LENGTH = 8
+
+
+def battery_percent(voltage: float) -> int:
+    """Battery level the way the phone app computes it (a voltage based estimate).
+
+    Up to 17 V the pack is treated as 12 V, above that as 24 V, linear between
+    9 V and 12.6 V per 12 V block and clamped to 0..100.
+    """
+    blocks = 1 if voltage <= 17 else 2
+    percent = (voltage - 9 * blocks) / (12.6 * blocks - 9 * blocks) * 100
+    return round(max(0, min(100, percent)))
 
 
 def crc16_modbus(data: bytes) -> int:
@@ -103,18 +125,28 @@ def parse_response(frame: bytes) -> dict[str, Any]:
     if temperature_raw >= 0x8000:  # allow sub-zero temperatures
         temperature_raw -= 0x10000
 
+    battery_voltage = regs[1] / 10
+    charge_current = regs[2] / 10
+    resets = regs[9]
     return {
         # confirmed against the controller display / app
-        "battery_voltage": regs[1] / 10,  # address 2, V
+        "battery_voltage": battery_voltage,  # address 2, V
+        "battery_percent": battery_percent(battery_voltage),  # app formula, estimate
+        "solar_power": round(battery_voltage * charge_current, 1),  # W, V x I
         "load_current": regs[3] / 10,  # address 4, A
         "temperature": temperature_raw / 100,  # address 5, deg C
         # actual load output state. Lags behind a load switch command by several
         # seconds, use "load_setting" for the switch.
         "load_on": regs[6] == 1,  # address 7
         "total_generation": regs[8] / 10,  # address 9, Ah
-        # not confirmed yet
-        "charge_current": regs[2] / 10,  # address 3, A (assumed same scale)
-        "charge_stage": regs[9],  # address 10, 3 = float (assumed)
+        # The app shows total = counter x 1000 + address 9 (see docs/protocol.md).
+        # Address 10 is that counter (it was once taken for a charge stage).
+        "charge_resets": resets,  # address 10
+        "total_generation_combined": resets * 1000 + regs[8] / 10,
+        "charge_current": charge_current,  # address 3, A
+        # wind input state (0 = closed), shown by the app
+        "wind_on": regs[7] == 1,  # address 8
+        "pv_day": regs[5] == 1,  # address 6
         # unknown registers, exposed as disabled diagnostic sensors
         "register_1": regs[0],
         "pv_state": PV_STATES.get(regs[5]),  # address 6, None if unknown
@@ -128,15 +160,15 @@ def parse_settings(frame: bytes) -> dict[str, Any]:
     regs = _registers(frame, SETTINGS_LENGTH, SETTINGS_REGISTER_COUNT)
     return {
         "battery_type": regs[0],
-        "battery_type_name": BATTERY_TYPES.get(regs[0]),  # None if unknown
+        "battery_type_name": ALL_BATTERY_TYPES.get(regs[0]),  # None if unknown
         "load_mode": regs[4],  # 0x1005
         "load_mode_name": LOAD_MODES.get(regs[4]),  # None if unknown
         "float_voltage": regs[3] / 10,
         "cutoff_voltage": regs[5] / 10,
         "recovery_voltage": regs[8] / 10,
         "load_setting": regs[6] == 1,  # commanded load state, updates at once
-        "setting_1002": regs[1],
-        "setting_1003": regs[2],
+        "timer_hours": regs[1],  # 0x1002, used in Timing mode
+        "timer_minutes": regs[2],  # 0x1003, used in Timing mode
         "system_voltage": regs[7],
         "system_voltage_name": SYSTEM_VOLTAGES.get(regs[7]),  # None if unknown
         "_settings_raw": {SETTINGS_FIRST_REGISTER + i: v for i, v in enumerate(regs)},

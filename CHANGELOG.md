@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.6.0
+Ideas from the project wescom-code/zhijinpower_ble, re-implemented here.
+- **New:** sensors "Battery level" (the app's voltage estimate) and "Solar power" (W, battery voltage x charge current), usable in the Energy dashboard via a Riemann sum helper.
+- **New:** binary sensors "Daylight" (PV state), "Wind input" (disabled by default) and "Connection" (diagnostic, always available).
+- **New:** a Repairs issue appears when the controller has been unreachable for 3 minutes and clears itself when it answers again.
+- **New:** number entities "Timing hours" (0-12) and "Timing minutes" (0-60) for registers 0x1002/0x1003 (disabled by default, only used in Timing mode).
+- **New:** 96 V added to the presumed system voltage list; "Total generation (with counter)" (disabled by default, unverified).
+- **Changed:** status register 10 is the generation counter, not a charge stage: the "Charge stage code" sensor became the diagnostic "Generation counter". The unknown "Setting 0x1002/0x1003" sensors are replaced by the number entities.
+- **New:** the battery type sensor also names codes 4-7 (open lead-acid, ternary lithium, LiFePO4, flooded), read only: they are never written.
+- Tests (87 in total).
+
 ## 0.5.3
 - **New:** system voltage mode (register 0x1008) as a sensor and as a select (disabled by default). Only Auto and 12 V can be set; 24, 36, 48, 60, 72 and 84 V are shown by the sensor (presumed order, unverified) but never written.
 - **New:** voltage settings are no longer written when the system voltage mode is not Auto or 12 V, because the limits are for 12 V systems.

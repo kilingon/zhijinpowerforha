@@ -13,6 +13,8 @@ ADAPTER_AUTO = "auto"
 # bothered with connection attempts all the time.
 MAX_TOLERATED_FAILURES = 3
 MAX_BACKOFF_INTERVAL = 300
+# A Repairs issue is raised when the controller was unreachable this long (seconds).
+REPAIR_AFTER = 180
 
 # The controller accepts only one Bluetooth connection at a time. The integration
 # connects briefly for every poll and disconnects again, so that the phone app can

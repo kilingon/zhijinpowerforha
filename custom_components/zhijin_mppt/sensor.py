@@ -11,10 +11,12 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
+    PERCENTAGE,
     EntityCategory,
     SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
     UnitOfElectricCurrent,
     UnitOfElectricPotential,
+    UnitOfPower,
     UnitOfTemperature,
 )
 from homeassistant.core import HomeAssistant
@@ -22,7 +24,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .coordinator import ZhiJinCoordinator
 from .entity import ZhiJinEntity
-from .protocol import BATTERY_TYPES, LOAD_MODES, PV_STATES, SYSTEM_VOLTAGES
+from .protocol import ALL_BATTERY_TYPES, LOAD_MODES, PV_STATES, SYSTEM_VOLTAGES
 
 
 def _diagnostic(key: str, *, enabled: bool = False) -> SensorEntityDescription:
@@ -42,6 +44,21 @@ SENSORS: tuple[SensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+        suggested_display_precision=1,
+    ),
+    SensorEntityDescription(
+        key="battery_percent",
+        translation_key="battery_percent",
+        device_class=SensorDeviceClass.BATTERY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=PERCENTAGE,
+    ),
+    SensorEntityDescription(
+        key="solar_power",
+        translation_key="solar_power",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfPower.WATT,
         suggested_display_precision=1,
     ),
     SensorEntityDescription(
@@ -76,17 +93,22 @@ SENSORS: tuple[SensorEntityDescription, ...] = (
         suggested_display_precision=1,
         icon="mdi:solar-power",
     ),
+    # Unverified: counter x 1000 + total generation, as the phone app computes it.
     SensorEntityDescription(
-        key="charge_stage",
-        translation_key="charge_stage",
-        entity_category=EntityCategory.DIAGNOSTIC,
-        icon="mdi:battery-charging",
+        key="total_generation_combined",
+        translation_key="total_generation_combined",
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement="Ah",
+        suggested_display_precision=1,
+        icon="mdi:solar-power",
+        entity_registry_enabled_default=False,
     ),
+    _diagnostic("charge_resets"),
     SensorEntityDescription(
         key="battery_type_name",
         translation_key="battery_type_name",
         device_class=SensorDeviceClass.ENUM,
-        options=list(BATTERY_TYPES.values()),
+        options=list(ALL_BATTERY_TYPES.values()),
         entity_category=EntityCategory.DIAGNOSTIC,
         icon="mdi:car-battery",
     ),
@@ -116,8 +138,6 @@ SENSORS: tuple[SensorEntityDescription, ...] = (
     # Raw registers whose meaning is not known (yet). Disabled by default, enable
     # them to watch how they change.
     _diagnostic("load_mode"),
-    _diagnostic("setting_1002"),
-    _diagnostic("setting_1003"),
     _diagnostic("register_1"),
     _diagnostic("register_6"),
     _diagnostic("register_8"),

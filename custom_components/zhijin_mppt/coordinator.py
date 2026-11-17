@@ -12,6 +12,7 @@ from homeassistant.components import bluetooth
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_ADDRESS
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
@@ -28,6 +29,7 @@ from .const import (
     DOMAIN,
     MAX_BACKOFF_INTERVAL,
     MAX_TOLERATED_FAILURES,
+    REPAIR_AFTER,
 )
 from .protocol import (
     ACK_LENGTH,
@@ -69,6 +71,8 @@ class ZhiJinCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.last_error: str | None = None
         self.bluetooth_source: str | None = None
         self.signal_strength: int | None = None
+        self._first_failure: datetime | None = None
+        self._issue_id = f"unreachable_{self.address}"
         # The controller accepts one connection at a time.
         self._lock = asyncio.Lock()
 
@@ -140,6 +144,8 @@ class ZhiJinCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             )
         self.failed_polls = 0
         self.last_error = None
+        self._first_failure = None
+        ir.async_delete_issue(self.hass, DOMAIN, self._issue_id)
         self.last_success = dt_util.utcnow()
         self.update_interval = timedelta(seconds=self.base_interval)
 
@@ -147,6 +153,19 @@ class ZhiJinCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         """Keep the last values for a few failed polls, then give up and back off."""
         self.failed_polls += 1
         self.last_error = str(err)
+        now = dt_util.utcnow()
+        if self._first_failure is None:
+            self._first_failure = now
+        if now - self._first_failure >= timedelta(seconds=REPAIR_AFTER):
+            ir.async_create_issue(
+                self.hass,
+                DOMAIN,
+                self._issue_id,
+                is_fixable=False,
+                severity=ir.IssueSeverity.WARNING,
+                translation_key="unreachable",
+                translation_placeholders={"name": self.config_entry.title},
+            )
         if self.data is not None and self.failed_polls < MAX_TOLERATED_FAILURES:
             _LOGGER.info(
                 "%s: poll failed (%s of %s tolerated): %s",

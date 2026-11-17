@@ -98,7 +98,7 @@ def test_load_frames_equal_the_ones_sent_by_the_app():
     [
         (0x1004, 146), (0x1004, 119), (0x1006, 116), (0x1006, 89), (0x1009, 131), (0x1009, 109),
         (0x1001, 0), (0x1001, 4), (0x1007, 2),
-        (0x1002, 0), (0x1003, 0), (0x0001, 0), (0x2000, 1),
+        (0x1002, 13), (0x1003, 61), (0x0001, 0), (0x2000, 1),
     ],
 )
 def test_writes_outside_the_known_ranges_are_refused(register, value):
@@ -149,3 +149,25 @@ def test_system_voltage_and_pv_state():
     night = p.parse_response(_frame([2, 124, 0, 0, 2060, 0, 0, 0, 7987, 3]))
     odd = p.parse_response(_frame([2, 124, 0, 0, 2060, 5, 0, 0, 7987, 3]))
     assert (day["pv_state"], night["pv_state"], odd["pv_state"]) == ("day", "night", None)
+
+
+def test_battery_percent_follows_the_app_formula():
+    assert p.battery_percent(12.6) == 100
+    assert p.battery_percent(9.0) == 0
+    assert p.battery_percent(10.8) == 50
+    assert p.battery_percent(25.2) == 100  # above 17 V a 24 V pack is assumed
+    assert p.battery_percent(8.0) == 0
+
+
+def test_status_has_derived_values():
+    data = p.parse_response(h("01 03 14 00 02 00 7e 00 00 00 00 08 16 00 00 00 00 00 00 1f 33 00 03 87 2a"))
+    assert data["battery_percent"] == 100
+    assert data["solar_power"] == round(data["battery_voltage"] * data["charge_current"], 1)
+    assert data["wind_on"] is False
+    assert data["total_generation_combined"] == data["charge_resets"] * 1000 + data["total_generation"]
+
+
+def test_extra_battery_types_are_shown_but_not_writable():
+    assert p.ALL_BATTERY_TYPES[6] == "lifepo4"
+    with pytest.raises(ValueError):
+        p.build_write_frame(p.REG_BATTERY_TYPE, 6)

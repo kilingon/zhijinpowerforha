@@ -75,9 +75,6 @@
       "total_generation": {
         "name": "Total generation"
       },
-      "charge_stage": {
-        "name": "Charge stage code"
-      },
       "pv_state": {
         "name": "Photovoltaic state",
         "state": {
@@ -90,7 +87,11 @@
         "state": {
           "lithium": "Lithium (b01)",
           "gel": "Gel (b02)",
-          "lead_acid": "Lead-acid / LiFePO4 (b03)"
+          "lead_acid": "Lead-acid / LiFePO4 (b03)",
+          "open_lead_acid": "Open lead-acid",
+          "ternary_lithium": "Ternary lithium",
+          "lifepo4": "LiFePO4",
+          "flooded": "Flooded lead-acid"
         }
       },
       "load_mode_name": {
@@ -112,17 +113,12 @@
           "48v": "48 V",
           "60v": "60 V",
           "72v": "72 V",
-          "84v": "84 V"
+          "84v": "84 V",
+          "96v": "96 V"
         }
       },
       "load_mode": {
         "name": "Load mode code"
-      },
-      "setting_1002": {
-        "name": "Setting 0x1002"
-      },
-      "setting_1003": {
-        "name": "Setting 0x1003"
       },
       "register_1": {
         "name": "Register 1"
@@ -147,11 +143,32 @@
       },
       "signal_strength": {
         "name": "Signal strength"
+      },
+      "battery_percent": {
+        "name": "Battery level"
+      },
+      "solar_power": {
+        "name": "Solar power"
+      },
+      "total_generation_combined": {
+        "name": "Total generation (with counter)"
+      },
+      "charge_resets": {
+        "name": "Generation counter"
       }
     },
     "binary_sensor": {
       "load_on": {
         "name": "Load output"
+      },
+      "pv_day": {
+        "name": "Daylight"
+      },
+      "wind_on": {
+        "name": "Wind input"
+      },
+      "connectivity": {
+        "name": "Connection"
       }
     },
     "switch": {
@@ -168,6 +185,12 @@
       },
       "cutoff_voltage": {
         "name": "Discharge cut-off voltage"
+      },
+      "timer_hours": {
+        "name": "Timing hours"
+      },
+      "timer_minutes": {
+        "name": "Timing minutes"
       }
     },
     "select": {
@@ -195,6 +218,12 @@
           "12v": "12 V"
         }
       }
+    }
+  },
+  "issues": {
+    "unreachable": {
+      "title": "ZhiJinPower controller unreachable",
+      "description": "{name} has not answered for several minutes. Check that the Bluetooth adapter or proxy is close enough, and that the phone app is closed. The issue clears itself when the controller answers again."
     }
   }
 }

@@ -10,7 +10,7 @@ from homeassistant.components.number import (
     NumberMode,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EntityCategory, UnitOfElectricPotential
+from homeassistant.const import EntityCategory, UnitOfElectricPotential, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -20,6 +20,8 @@ from .protocol import (
     REG_CUTOFF_VOLTAGE,
     REG_FLOAT_VOLTAGE,
     REG_RECOVERY_VOLTAGE,
+    REG_TIMER_HOURS,
+    REG_TIMER_MINUTES,
     SYSTEM_VOLTAGES,
     VOLTAGE_WRITE_MODES,
     WRITABLE,
@@ -49,7 +51,25 @@ def _voltage(key: str, register: int) -> ZhiJinNumberDescription:
     )
 
 
+def _timer(key: str, register: int, unit: UnitOfTime) -> ZhiJinNumberDescription:
+    low, high = WRITABLE[register]
+    return ZhiJinNumberDescription(
+        key=key,
+        translation_key=key,
+        register=register,
+        native_unit_of_measurement=unit,
+        native_min_value=low,
+        native_max_value=high,
+        native_step=1,
+        mode=NumberMode.BOX,
+        entity_category=EntityCategory.CONFIG,
+        entity_registry_enabled_default=False,  # only used in Timing mode
+    )
+
+
 NUMBERS: tuple[ZhiJinNumberDescription, ...] = (
+    _timer("timer_hours", REG_TIMER_HOURS, UnitOfTime.HOURS),
+    _timer("timer_minutes", REG_TIMER_MINUTES, UnitOfTime.MINUTES),
     _voltage("float_voltage", REG_FLOAT_VOLTAGE),
     _voltage("recovery_voltage", REG_RECOVERY_VOLTAGE),
     _voltage("cutoff_voltage", REG_CUTOFF_VOLTAGE),
@@ -75,9 +95,12 @@ class ZhiJinNumber(ZhiJinEntity, NumberEntity):
         return self.coordinator.data.get(self.entity_description.key)
 
     async def async_set_native_value(self, value: float) -> None:
+        key = self.entity_description.key
+        if key in ("timer_hours", "timer_minutes"):
+            await self._async_write(self.entity_description.register, round(value))
+            return
         raw = round(value * 10)
         data = self.coordinator.data or {}
-        key = self.entity_description.key
         mode = data.get("system_voltage")
         if mode not in VOLTAGE_WRITE_MODES:
             name = SYSTEM_VOLTAGES.get(mode, f"code {mode}")

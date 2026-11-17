@@ -95,7 +95,8 @@ async def test_raw_registers_and_battery_type_select_are_disabled_by_default(has
     registry = er.async_get(hass)
     for platform, key in [
         ("sensor", "register_1"), ("sensor", "register_6"), ("sensor", "register_8"),
-        ("sensor", "setting_1002"), ("sensor", "setting_1003"),
+        ("sensor", "total_generation_combined"), ("sensor", "charge_resets"),
+        ("number", "timer_hours"), ("number", "timer_minutes"), ("binary_sensor", "wind_on"),
         ("sensor", "load_mode"), ("select", "battery_type"), ("select", "load_mode_select"), ("select", "system_voltage_select"),
     ]:
         entry = registry.async_get(eid(hass, platform, key))
@@ -359,3 +360,30 @@ async def test_voltages_are_not_written_when_the_system_is_not_12v(hass, radio, 
     with pytest.raises(HomeAssistantError, match="system voltage mode"):
         await call(hass, "number", "set_value", "number", "float_voltage", value=14.0)
     assert controller.log == []
+
+
+async def test_new_sensors_and_connectivity(hass, radio):
+    await setup_entry(hass)
+    assert state(hass, "sensor", "battery_percent").state == "94"  # 12.4 V
+    assert float(state(hass, "sensor", "solar_power").state) >= 0
+    assert state(hass, "binary_sensor", "connectivity").state == STATE_ON
+    assert state(hass, "binary_sensor", "pv_day") is not None
+
+
+async def test_repairs_issue_after_a_long_outage_and_cleared_on_recovery(hass, radio, controller):
+    from homeassistant.helpers import issue_registry as ir
+
+    entry = await setup_entry(hass)
+    coordinator = entry.runtime_data
+    issue_id = f"unreachable_{ADDRESS}"
+    registry = ir.async_get(hass)
+    controller.silent = True
+    await poll(hass)
+    assert registry.async_get_issue(DOMAIN, issue_id) is None  # not long enough yet
+    assert state(hass, "binary_sensor", "connectivity").state == STATE_ON
+    coordinator._first_failure = dt_util.utcnow() - timedelta(minutes=4)
+    await poll(hass)
+    assert registry.async_get_issue(DOMAIN, issue_id) is not None
+    controller.silent = False
+    await poll(hass, seconds=2 * DEFAULT_SCAN_INTERVAL + 10)
+    assert registry.async_get_issue(DOMAIN, issue_id) is None
